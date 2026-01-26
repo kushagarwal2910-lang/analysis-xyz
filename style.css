@@ -495,3 +495,44 @@ body {
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
     border-color: var(--accent-color);
 }
+
+/* Success Message Adjustment */
+.success-message {
+    margin-bottom: 32px;
+}
+
+.success-message h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 16px;
+}
+
+/* Report Styles (embedded in generated HTML, but good to have here too) */
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--secondary-text);
+    font-weight: 500;
+}
