@@ -17,36 +17,46 @@ import numpy as np
 def process_data_and_generate_report(file_path, ext, base_dir):
     df = None
     
-    if ext == ".csv":
-        try:
-            df = pd.read_csv(file_path)
-        except:
-            # Try with different encoding or separator if needed
-             df = pd.read_csv(file_path, encoding='latin1')
-    elif ext == ".xlsx":
-        df = pd.read_excel(file_path)
-    elif ext == ".pdf":
-        df = extract_table_from_pdf(file_path)
+    try:
+        if ext == ".csv":
+            try:
+                df = pd.read_csv(file_path)
+            except:
+                # Try with different encoding or separator if needed
+                 df = pd.read_csv(file_path, encoding='latin1')
+        elif ext == ".xlsx":
+            df = pd.read_excel(file_path)
+        elif ext == ".pdf":
+            df = extract_table_from_pdf(file_path)
+            
+        if df is None or df.empty:
+            raise Exception("Could not extract data from file or file is empty.")
+            
+        # Basic Cleaning
+        df.columns = [str(c).strip() for c in df.columns]
         
-    if df is None or df.empty:
-        raise Exception("Could not extract data from file or file is empty.")
-        
-    # Basic Cleaning
-    df.columns = [str(c).strip() for c in df.columns]
-    
-    # Fix currency columns
-    for col in df.columns:
-        if df[col].dtype == 'object':
-            sample = df[col].dropna().astype(str).head(10)
-            if any(sample.str.contains(r'^\$|€|£', regex=True)):
-                df[col] = df[col].replace(r'[$,]', '', regex=True)
-                df[col] = pd.to_numeric(df[col], errors='coerce')
+        # Fix currency columns
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                sample = df[col].dropna().astype(str).head(10)
+                if any(sample.str.contains(r'^\$|€|£', regex=True)):
+                    df[col] = df[col].replace(r'[$,]', '', regex=True)
+                    df[col] = pd.to_numeric(df[col], errors='coerce')
 
-    # Generate Lightweight HTML Report
-    # Return HTML string directly instead of saving to file (for Vercel)
-    return generate_html_report(df)
+        # Generate Lightweight HTML Report
+        # Return HTML string directly instead of saving to file (for Vercel)
+        return generate_html_report(df)
     
-    return report_filename
+    except Exception as e:
+        # Friendly error handling
+        return f"""
+        <div style="text-align: center; padding: 50px; font-family: 'Inter', sans-serif;">
+            <h2 style="color: #e63946;">Oops! Something went wrong.</h2>
+            <p>We couldn't process your file. Please make sure it's a valid CSV, Excel, or PDF file.</p>
+            <p style="color: #666; font-size: 14px;">Error details: {str(e)}</p>
+            <a href="/" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #0071e3; color: white; text-decoration: none; border-radius: 8px;">Try Again</a>
+        </div>
+        """
 
 def extract_table_from_pdf(file_path):
     # This is a heuristic approach. extracting tables from PDF is hard.
@@ -94,12 +104,12 @@ def generate_charts(df):
         # Check if column has reasonable number of unique values for a pie chart
         if 1 < df[col].nunique() < 15:
             plt.figure(figsize=(8, 6))
-            df[col].value_counts().plot.pie(autopct='%1.1f%%', startangle=90)
-            plt.title(f'Distribution of {col}')
+            df[col].value_counts().plot.pie(autopct='%1.1f%%', startangle=90, colors=sns.color_palette('pastel'))
+            plt.title(f'Distribution of {col}', fontname='Inter', fontsize=14)
             plt.ylabel('')
             
             img = io.BytesIO()
-            plt.savefig(img, format='png', bbox_inches='tight')
+            plt.savefig(img, format='png', bbox_inches='tight', dpi=120)
             img.seek(0)
             charts.append({
                 'title': f'Distribution of {col}',
@@ -114,16 +124,17 @@ def generate_charts(df):
         if df[col].nunique() > 1:
             plt.figure(figsize=(10, 6))
             if df[col].nunique() < 20:
-                df[col].value_counts().sort_index().plot.bar(color='#0071e3')
+                df[col].value_counts().sort_index().plot.bar(color='#0071e3', alpha=0.8)
             else:
-                df[col].plot.hist(bins=20, color='#0071e3', edgecolor='white')
+                df[col].plot.hist(bins=20, color='#0071e3', edgecolor='white', alpha=0.8)
             
-            plt.title(f'Distribution of {col}')
-            plt.xlabel(col)
-            plt.grid(axis='y', alpha=0.5)
+            plt.title(f'Distribution of {col}', fontname='Inter', fontsize=14)
+            plt.xlabel(col, fontname='Inter')
+            plt.grid(axis='y', alpha=0.3)
+            sns.despine()
             
             img = io.BytesIO()
-            plt.savefig(img, format='png', bbox_inches='tight')
+            plt.savefig(img, format='png', bbox_inches='tight', dpi=120)
             img.seek(0)
             charts.append({
                 'title': f'Distribution of {col}',
@@ -136,11 +147,11 @@ def generate_charts(df):
     if len(num_cols) > 1:
         plt.figure(figsize=(10, 8))
         corr = df[num_cols].corr()
-        sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
-        plt.title('Correlation Matrix')
+        sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5, cbar_kws={'shrink': .8})
+        plt.title('Correlation Matrix', fontname='Inter', fontsize=14)
         
         img = io.BytesIO()
-        plt.savefig(img, format='png', bbox_inches='tight')
+        plt.savefig(img, format='png', bbox_inches='tight', dpi=120)
         img.seek(0)
         charts.append({
             'title': 'Correlation Matrix',
@@ -150,12 +161,68 @@ def generate_charts(df):
             
     return charts
 
+def generate_ai_insights(df):
+    """
+    Generates simulated AI insights based on statistical analysis.
+    Returns a dict with 'findings' and 'recommendations'.
+    """
+    findings = []
+    recommendations = []
+    
+    num_cols = df.select_dtypes(include=['number']).columns
+    cat_cols = df.select_dtypes(include=['object', 'category']).columns
+    
+    # 1. Correlation Analysis
+    if len(num_cols) > 1:
+        corr_matrix = df[num_cols].corr().abs()
+        # Select upper triangle of correlation matrix
+        upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+        
+        # Find features with correlation greater than 0.7
+        to_drop = [column for column in upper.columns if any(upper[column] > 0.7)]
+        
+        for col in to_drop:
+            # Find the row (index) that correlates with this col
+            correlated_row = upper[col][upper[col] > 0.7].index[0]
+            val = upper.loc[correlated_row, col]
+            findings.append(f"Strong relationship detected between <strong>{correlated_row}</strong> and <strong>{col}</strong> ({val:.2f} correlation).")
+            recommendations.append(f"Since {correlated_row} and {col} move together, consider optimizing for {correlated_row} to potentially drive {col}.")
+
+    # 2. Outlier / Max-Min Analysis
+    for col in num_cols[:2]: # Limit to first 2 numeric cols
+        max_val = df[col].max()
+        min_val = df[col].min()
+        mean_val = df[col].mean()
+        
+        findings.append(f"The average <strong>{col}</strong> is approx. {mean_val:.2f}, but peaks at {max_val:.2f}.")
+        if max_val > mean_val * 3:
+            recommendations.append(f"Investigate the outliers in {col} where values exceed {mean_val * 2:.2f}, as they are significantly higher than the average.")
+
+    # 3. Categorical Dominance
+    for col in cat_cols[:1]:
+        top_val = df[col].mode()[0]
+        freq = df[col].value_counts().iloc[0]
+        total = len(df)
+        pct = (freq/total)*100
+        findings.append(f"<strong>{top_val}</strong> is the dominant category in {col}, accounting for {pct:.1f}% of entries.")
+        if pct > 50:
+             recommendations.append(f"The dataset is heavily skewed towards {top_val}. Ensure your strategy accounts for this concentration.")
+
+    # Fallbacks if analysis yields little
+    if not findings:
+        findings.append("Data appears balanced with no extreme statistical anomalies detected.")
+        recommendations.append("Conduct a deeper segment analysis to find hidden patterns not visible in aggregate stats.")
+
+    return {
+        "findings": findings,
+        "recommendations": recommendations
+    }
+
 def generate_ml_insights(df):
     insights = {}
     
     # 1. Determine Target Variable
-    # Heuristic: Look for common target names, otherwise pick the last column
-    target_candidates = ['price', 'cost', 'salary', 'sales', 'churn', 'outcome', 'target', 'class', 'survived']
+    target_candidates = ['price', 'cost', 'salary', 'sales', 'churn', 'outcome', 'target', 'class', 'survived', 'profit', 'revenue']
     target_col = None
     
     # Check for exact matches first
@@ -201,6 +268,9 @@ def generate_ml_insights(df):
                 
         # Handle Missing Values in X
         imputer = SimpleImputer(strategy='mean')
+        if len(X.columns) == 0:
+            return None # No features left
+            
         X_imputed = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
         
         # 3. Choose Model & Train
@@ -225,7 +295,7 @@ def generate_ml_insights(df):
         # Cross Validation Score
         scores = cross_val_score(model, X_imputed, y, cv=3)
         insights['score'] = f"{scores.mean():.2f}"
-        insights['metric'] = "Accuracy" if is_classification else "R² Score"
+        insights['metric'] = "Accuracy" if is_classification else "Predictive Power (R²)"
         
         # Fit on full data for feature importance
         model.fit(X_imputed, y)
@@ -236,13 +306,15 @@ def generate_ml_insights(df):
         top_n = min(10, len(X.columns))
         
         plt.figure(figsize=(10, 6))
-        plt.title(f'Top {top_n} Factors Influencing "{target_col}"')
-        plt.bar(range(top_n), importances[indices[:top_n]], align='center', color='#0071e3')
+        plt.title(f'Key Drivers of "{target_col}"', fontname='Inter', fontsize=14)
+        plt.bar(range(top_n), importances[indices[:top_n]], align='center', color='#0071e3', alpha=0.8)
         plt.xticks(range(top_n), [X.columns[i] for i in indices[:top_n]], rotation=45, ha='right')
+        plt.grid(axis='y', alpha=0.3)
+        sns.despine()
         plt.tight_layout()
         
         img = io.BytesIO()
-        plt.savefig(img, format='png', bbox_inches='tight')
+        plt.savefig(img, format='png', bbox_inches='tight', dpi=120)
         img.seek(0)
         insights['importance_plot'] = base64.b64encode(img.getvalue()).decode()
         plt.close()
@@ -255,22 +327,21 @@ def generate_ml_insights(df):
 
 def generate_html_report(df):
     # Statistics
-    desc = df.describe().to_html(classes="table table-striped", border=0)
+    desc = df.describe().to_html(classes="table datatable", border=0)
     
-    # Data Preview (Increased to 100 rows for better interaction)
-    # We give it a specific ID for DataTables
-    head = df.head(100).to_html(classes="table table-striped display", border=0, table_id="data-preview-table")
+    # Data Preview
+    head = df.head(100).to_html(classes="table datatable display", border=0, table_id="data-preview-table")
     
     # Missing values
     missing = df.isnull().sum().to_frame(name='Missing Values')
     missing = missing[missing['Missing Values'] > 0]
     if not missing.empty:
-        missing_html = missing.to_html(classes="table table-striped", border=0)
+        missing_html = missing.to_html(classes="table datatable", border=0)
     else:
-        missing_html = "<p>No missing values found.</p>"
+        missing_html = "<div class='empty-state'>No missing values found. Clean dataset!</div>"
         
     # Column types
-    dtypes = df.dtypes.to_frame(name='Data Type').astype(str).to_html(classes="table table-striped", border=0)
+    dtypes = df.dtypes.to_frame(name='Data Type').astype(str).to_html(classes="table datatable", border=0)
 
     # Generate Charts
     charts = generate_charts(df)
@@ -280,7 +351,7 @@ def generate_html_report(df):
         for chart in charts:
             charts_html += f"""
             <div class='card chart-card'>
-                <h3>{chart['title']}</h3>
+                <h3 class='card-title'>{chart['title']}</h3>
                 <img src='data:image/png;base64,{chart['img']}' alt='{chart['title']}'>
             </div>
             """
@@ -291,23 +362,57 @@ def generate_html_report(df):
     ml_html = ""
     if ml_insights:
         ml_html = f"""
-        <h2>AI Prediction Insights</h2>
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div>
-                    <h3 style="margin: 0; color: var(--accent);">Target Variable: {ml_insights['target_col']}</h3>
-                    <p style="margin: 5px 0 0 0; color: var(--secondary-text);">Task: {ml_insights['type']}</p>
+        <h2>Predictive Analytics</h2>
+        <div class="card ml-card">
+            <div class="ml-header">
+                <div class="ml-target">
+                    <span class="label">Target Variable</span>
+                    <h3>{ml_insights['target_col']}</h3>
+                    <span class="badge">{ml_insights['type']}</span>
                 </div>
-                <div style="text-align: right;">
-                    <h3 style="margin: 0; font-size: 24px;">{ml_insights['score']}</h3>
-                    <p style="margin: 5px 0 0 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">{ml_insights['metric']}</p>
+                <div class="ml-score">
+                    <span class="score-value">{ml_insights['score']}</span>
+                    <span class="score-label">{ml_insights['metric']}</span>
                 </div>
             </div>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <h3>What drives this outcome?</h3>
-            <p>The chart below shows which factors have the most impact on <strong>{ml_insights['target_col']}</strong>.</p>
-            <div style="text-align: center;">
-                <img src='data:image/png;base64,{ml_insights['importance_plot']}' style="max-width: 100%; height: auto;" alt='Feature Importance'>
+            <div class="ml-body">
+                <h3>Key Drivers</h3>
+                <p>The chart below identifies which factors most significantly influence <strong>{ml_insights['target_col']}</strong>.</p>
+                <div class="chart-container">
+                    <img src='data:image/png;base64,{ml_insights['importance_plot']}' alt='Feature Importance'>
+                </div>
+            </div>
+        </div>
+        """
+
+    # Generate AI Insights (New Feature)
+    ai_data = generate_ai_insights(df)
+    ai_html = ""
+    if ai_data:
+        findings_html = "".join([f"<li>{item}</li>" for item in ai_data['findings']])
+        recs_html = "".join([f"<li>{item}</li>" for item in ai_data['recommendations']])
+        
+        ai_html = f"""
+        <div class="ai-summary-section">
+            <div class="card ai-card">
+                <div class="ai-header">
+                    <span class="ai-badge">✨ Smart Executive Summary</span>
+                    <h2>Business Intelligence Report</h2>
+                </div>
+                <div class="ai-grid">
+                    <div class="ai-col">
+                        <h3>🔑 Key Findings</h3>
+                        <ul class="insight-list">
+                            {findings_html}
+                        </ul>
+                    </div>
+                    <div class="ai-col">
+                        <h3>🚀 Actionable Recommendations</h3>
+                        <ul class="insight-list">
+                            {recs_html}
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
         """
@@ -319,122 +424,302 @@ def generate_html_report(df):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Analysis Report</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <!-- DataTables CSS -->
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
         <style>
             :root {{
-                --primary: #000000;
+                --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                --primary: #111111;
+                --secondary: #666666;
                 --accent: #0071e3;
+                --accent-hover: #0077ed;
                 --bg: #f5f5f7;
-                --card-bg: #ffffff;
-                --text: #1d1d1f;
-                --border: #d2d2d7;
+                --surface: #ffffff;
+                --border: #e1e1e1;
+                --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+                --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                --radius-md: 12px;
+                --radius-lg: 16px;
             }}
+            
+            * {{
+                box-sizing: border-box;
+            }}
+            
             body {{
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-                background: var(--bg);
-                color: var(--text);
-                line-height: 1.5;
+                font-family: var(--font-sans);
+                background-color: var(--bg);
+                color: var(--primary);
+                line-height: 1.6;
                 margin: 0;
                 padding: 40px 20px;
+                -webkit-font-smoothing: antialiased;
             }}
+            
             .container {{
                 max-width: 1000px;
                 margin: 0 auto;
             }}
-            h1 {{
-                font-size: 32px;
-                font-weight: 600;
-                margin-bottom: 24px;
-                color: var(--primary);
+            
+            .nav-header {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 40px;
             }}
+            
+            .btn {{
+                display: inline-flex;
+                align-items: center;
+                padding: 10px 16px;
+                background: white;
+                color: var(--primary);
+                text-decoration: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                border: 1px solid var(--border);
+                transition: all 0.2s;
+            }}
+            
+            .btn:hover {{
+                border-color: var(--secondary);
+                background: #fafafa;
+            }}
+            
+            .btn-primary {{
+                background: var(--accent);
+                color: white;
+                border: none;
+            }}
+            
+            .btn-primary:hover {{
+                background: var(--accent-hover);
+            }}
+            
+            h1, h2, h3 {{
+                color: var(--primary);
+                font-weight: 600;
+                margin-top: 0;
+            }}
+            
             h2 {{
-                font-size: 24px;
-                font-weight: 600;
-                margin-top: 40px;
+                font-size: 20px;
+                margin-top: 48px;
                 margin-bottom: 16px;
-                color: var(--primary);
+                letter-spacing: -0.01em;
             }}
+            
             .card {{
-                background: var(--card-bg);
-                border-radius: 18px;
+                background: var(--surface);
+                border-radius: var(--radius-lg);
                 padding: 32px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-                overflow-x: auto;
+                box-shadow: var(--shadow-md);
+                border: 1px solid rgba(0,0,0,0.03);
+                margin-bottom: 24px;
+                overflow: hidden;
+            }}
+            
+            /* AI Card Styling */
+            .ai-card {{
+                border-left: 4px solid var(--accent);
+                background: linear-gradient(to bottom right, #ffffff, #f9faff);
+            }}
+            
+            .ai-header {{
                 margin-bottom: 24px;
             }}
+            
+            .ai-badge {{
+                display: inline-block;
+                background: rgba(0, 113, 227, 0.1);
+                color: var(--accent);
+                font-size: 12px;
+                font-weight: 600;
+                padding: 4px 12px;
+                border-radius: 20px;
+                margin-bottom: 8px;
+            }}
+            
+            .ai-grid {{
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 40px;
+            }}
+            
+            @media (max-width: 768px) {{
+                .ai-grid {{
+                    grid-template-columns: 1fr;
+                    gap: 24px;
+                }}
+            }}
+            
+            .insight-list {{
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }}
+            
+            .insight-list li {{
+                position: relative;
+                padding-left: 20px;
+                margin-bottom: 12px;
+                color: var(--secondary);
+                font-size: 15px;
+            }}
+            
+            .insight-list li:before {{
+                content: "•";
+                color: var(--accent);
+                position: absolute;
+                left: 0;
+                font-weight: bold;
+            }}
+            
+            /* Charts */
             .charts-grid {{
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
                 gap: 24px;
             }}
-            .chart-card {{
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }}
+            
             .chart-card img {{
-                max-width: 100%;
+                width: 100%;
                 height: auto;
-                margin-top: 16px;
+                border-radius: 8px;
             }}
-            table {{
+            
+            .card-title {{
+                font-size: 16px;
+                color: var(--secondary);
+                margin-bottom: 16px;
+                text-align: center;
+            }}
+            
+            /* Tables */
+            table.datatable {{
                 width: 100%;
                 border-collapse: collapse;
                 font-size: 14px;
             }}
-            th {{
-                text-align: left;
-                padding: 12px;
-                border-bottom: 1px solid var(--border);
-                color: var(--text);
-                font-weight: 600;
-            }}
-            td {{
-                padding: 12px;
-                border-bottom: 1px solid #eee;
-            }}
-            tr:last-child td {{
-                border-bottom: none;
-            }}
-            .btn {{
-                display: inline-block;
-                padding: 10px 20px;
-                background: var(--accent);
-                color: white;
-                text-decoration: none;
-                border-radius: 980px;
+            
+            .dataTables_wrapper .dataTables_length, 
+            .dataTables_wrapper .dataTables_filter {{
+                margin-bottom: 20px;
                 font-size: 14px;
-                font-weight: 500;
-                margin-bottom: 40px;
             }}
+            
+            table.dataTable thead th {{
+                border-bottom: 1px solid var(--border) !important;
+                color: var(--secondary);
+                font-weight: 600;
+                padding: 12px !important;
+            }}
+            
+            table.dataTable tbody td {{
+                padding: 12px !important;
+                border-bottom: 1px solid #f0f0f0;
+                color: var(--primary);
+            }}
+            
+            /* Footer / Monetization */
+            .cto-footer {{
+                margin-top: 60px;
+                padding: 40px;
+                background: #1d1d1f;
+                border-radius: var(--radius-lg);
+                color: white;
+                text-align: center;
+            }}
+            
+            .cto-footer h3 {{
+                color: white;
+                margin-bottom: 8px;
+            }}
+            
+            .cto-footer p {{
+                color: #a1a1a6;
+                margin-bottom: 24px;
+            }}
+            
+            .export-bar {{
+                position: sticky;
+                bottom: 20px;
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: center;
+                pointer-events: none;
+                z-index: 100;
+            }}
+            
+            .export-btn {{
+                pointer-events: auto;
+                background: #1d1d1f;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                text-decoration: none;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: transform 0.2s;
+            }}
+            
+            .export-btn:hover {{
+                transform: translateY(-2px);
+            }}
+
+            /* Mobile Responsive Fixes */
+            .card {{
+                 overflow-x: auto;
+            }}
+            
+            .dataTables_wrapper {{
+                overflow-x: auto;
+            }}
+            
         </style>
     </head>
     <body>
         <div class="container">
-            <a href="/" class="btn">&larr; Back to Upload</a>
-            <h1>Data Analysis Report</h1>
+            <div class="nav-header">
+                <a href="/" class="btn">&larr; Analyze Another File</a>
+                <div style="font-weight: 600;">Analysis XYZ</div>
+            </div>
+            
+            {ai_html}
             
             {ml_html}
             
             {charts_html}
 
-            <h2>Data Preview (First 100 Rows)</h2>
+            <h2>Data Preview</h2>
             <div class="card">
                 {head}
             </div>
 
-            <h2>Descriptive Statistics</h2>
-            <div class="card">
-                {desc}
-            </div>
-            
-            <h2>Data Structure & Types</h2>
-            <div class="card">
-                <p><strong>Rows:</strong> {df.shape[0]} | <strong>Columns:</strong> {df.shape[1]}</p>
-                <div style="margin-top: 20px;">
-                    {dtypes}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                    <h2>Descriptive Statistics</h2>
+                    <div class="card">
+                        {desc}
+                    </div>
+                </div>
+                <div>
+                     <h2>Data Types</h2>
+                    <div class="card">
+                         <div style="margin-bottom: 10px; font-size: 14px; color: var(--secondary);">
+                            <strong>Total Rows:</strong> {df.shape[0]} | <strong>Columns:</strong> {df.shape[1]}
+                        </div>
+                        {dtypes}
+                    </div>
                 </div>
             </div>
             
@@ -442,6 +727,18 @@ def generate_html_report(df):
             <div class="card">
                 {missing_html}
             </div>
+            
+            <div class="cto-footer">
+                <h3>Need a deeper custom analysis?</h3>
+                <p>Get a comprehensive audit from a certified data scientist.</p>
+                <a href="#" class="btn btn-primary" style="border:none;">Hire a Data Expert</a>
+            </div>
+        </div>
+        
+        <div class="export-bar">
+            <a href="#" class="export-btn" onclick="alert('This feature is part of the Pro plan. Upgrade to export professional PDF reports.'); return false;">
+                <span>📄 Export Professional Report</span>
+            </a>
         </div>
         
         <!-- jQuery and DataTables JS -->
@@ -450,9 +747,11 @@ def generate_html_report(df):
         
         <script>
             $(document).ready( function () {{
-                $('#data-preview-table').DataTable({{
+                $('.datatable').DataTable({{
                     "pageLength": 10,
-                    "scrollX": true
+                    "scrollX": true,
+                    "lengthChange": false,
+                    "searching": true
                 }});
             }});
         </script>
