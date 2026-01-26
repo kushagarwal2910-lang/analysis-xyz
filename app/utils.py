@@ -8,6 +8,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import io
 import base64
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer
+import numpy as np
 
 def process_data_and_generate_report(file_path, ext, base_dir):
     df = None
@@ -145,6 +150,109 @@ def generate_charts(df):
             
     return charts
 
+def generate_ml_insights(df):
+    insights = {}
+    
+    # 1. Determine Target Variable
+    # Heuristic: Look for common target names, otherwise pick the last column
+    target_candidates = ['price', 'cost', 'salary', 'sales', 'churn', 'outcome', 'target', 'class', 'survived']
+    target_col = None
+    
+    # Check for exact matches first
+    for col in df.columns:
+        if col.lower() in target_candidates:
+            target_col = col
+            break
+            
+    # If no match, pick the last column that isn't an ID
+    if not target_col:
+        for col in reversed(df.columns):
+            if 'id' not in col.lower() and df[col].nunique() > 1:
+                target_col = col
+                break
+                
+    if not target_col:
+        return None
+
+    insights['target_col'] = target_col
+    
+    # 2. Prepare Data
+    try:
+        # Drop rows with missing target
+        df_ml = df.dropna(subset=[target_col]).copy()
+        
+        # Separate X and y
+        X = df_ml.drop(columns=[target_col])
+        y = df_ml[target_col]
+        
+        # Handle ID columns in X (drop them)
+        cols_to_drop = [c for c in X.columns if 'id' in c.lower() or X[c].nunique() == len(X)]
+        X = X.drop(columns=cols_to_drop)
+        
+        # Encode Categorical Variables
+        le_dict = {}
+        for col in X.select_dtypes(include=['object', 'category']).columns:
+            if X[col].nunique() < 50: # Limit to reasonable cardinality
+                le = LabelEncoder()
+                X[col] = le.fit_transform(X[col].astype(str))
+                le_dict[col] = le
+            else:
+                X = X.drop(columns=[col]) # Drop high cardinality columns
+                
+        # Handle Missing Values in X
+        imputer = SimpleImputer(strategy='mean')
+        X_imputed = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+        
+        # 3. Choose Model & Train
+        is_classification = False
+        if pd.api.types.is_numeric_dtype(y) and y.nunique() > 10:
+            # Regression
+            model = RandomForestRegressor(n_estimators=50, random_state=42, max_depth=10)
+            scoring = 'r2'
+            insights['type'] = 'Regression'
+        else:
+            # Classification
+            is_classification = True
+            model = RandomForestClassifier(n_estimators=50, random_state=42, max_depth=10)
+            scoring = 'accuracy'
+            insights['type'] = 'Classification'
+            
+            # Encode y if needed
+            if not pd.api.types.is_numeric_dtype(y):
+                le_y = LabelEncoder()
+                y = le_y.fit_transform(y.astype(str))
+                
+        # Cross Validation Score
+        scores = cross_val_score(model, X_imputed, y, cv=3)
+        insights['score'] = f"{scores.mean():.2f}"
+        insights['metric'] = "Accuracy" if is_classification else "R² Score"
+        
+        # Fit on full data for feature importance
+        model.fit(X_imputed, y)
+        
+        # 4. Feature Importance
+        importances = model.feature_importances_
+        indices = np.argsort(importances)[::-1]
+        top_n = min(10, len(X.columns))
+        
+        plt.figure(figsize=(10, 6))
+        plt.title(f'Top {top_n} Factors Influencing "{target_col}"')
+        plt.bar(range(top_n), importances[indices[:top_n]], align='center', color='#0071e3')
+        plt.xticks(range(top_n), [X.columns[i] for i in indices[:top_n]], rotation=45, ha='right')
+        plt.tight_layout()
+        
+        img = io.BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight')
+        img.seek(0)
+        insights['importance_plot'] = base64.b64encode(img.getvalue()).decode()
+        plt.close()
+        
+        return insights
+        
+    except Exception as e:
+        print(f"ML Error: {e}")
+        return None
+
 def generate_html_report(df):
     # Statistics
     desc = df.describe().to_html(classes="table table-striped", border=0)
@@ -177,6 +285,32 @@ def generate_html_report(df):
             </div>
             """
         charts_html += "</div>"
+        
+    # Generate ML Insights
+    ml_insights = generate_ml_insights(df)
+    ml_html = ""
+    if ml_insights:
+        ml_html = f"""
+        <h2>AI Prediction Insights</h2>
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h3 style="margin: 0; color: var(--accent);">Target Variable: {ml_insights['target_col']}</h3>
+                    <p style="margin: 5px 0 0 0; color: var(--secondary-text);">Task: {ml_insights['type']}</p>
+                </div>
+                <div style="text-align: right;">
+                    <h3 style="margin: 0; font-size: 24px;">{ml_insights['score']}</h3>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">{ml_insights['metric']}</p>
+                </div>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3>What drives this outcome?</h3>
+            <p>The chart below shows which factors have the most impact on <strong>{ml_insights['target_col']}</strong>.</p>
+            <div style="text-align: center;">
+                <img src='data:image/png;base64,{ml_insights['importance_plot']}' style="max-width: 100%; height: auto;" alt='Feature Importance'>
+            </div>
+        </div>
+        """
 
     html_content = f"""
     <!DOCTYPE html>
@@ -282,9 +416,11 @@ def generate_html_report(df):
             <a href="/" class="btn">&larr; Back to Upload</a>
             <h1>Data Analysis Report</h1>
             
+            {ml_html}
+            
             {charts_html}
 
-            <h2>Data Preview (First 20 Rows)</h2>
+            <h2>Data Preview (First 100 Rows)</h2>
             <div class="card">
                 {head}
             </div>
