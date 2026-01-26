@@ -178,25 +178,25 @@ def generate_html_report(df):
             
             <div class="card">
                 <h2>Dataset Overview</h2>
-                <p><strong>Rows:</strong> {{df.shape[0]}} | <strong>Columns:</strong> {{df.shape[1]}}</p>
+                <p><strong>Rows:</strong> {df.shape[0]} | <strong>Columns:</strong> {df.shape[1]}</p>
                 <div style="margin-top: 20px;">
-                    {{dtypes}}
+                    {dtypes}
                 </div>
             </div>
 
             <h2>Descriptive Statistics</h2>
             <div class="card">
-                {{desc}}
+                {desc}
             </div>
 
             <h2>First 10 Rows</h2>
             <div class="card">
-                {{head}}
+                {head}
             </div>
             
             <h2>Missing Values</h2>
             <div class="card">
-                {{missing_html}}
+                {missing_html}
             </div>
         </div>
     </body>
