@@ -44,6 +44,8 @@ def process_data_and_generate_report(file_path, ext, base_dir):
         return generate_html_report(df)
     
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         # Friendly error handling
         return f"""
         <div style="text-align: center; padding: 50px; font-family: 'Inter', sans-serif;">
@@ -594,6 +596,86 @@ def generate_html_report(df):
                 border-radius: 8px;
             }}
             
+            .nav-header {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 24px;
+            }}
+            
+            /* AdSense Containers */
+            .ad-container {{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 20px auto;
+                background: #f0f0f0;
+                border-radius: 8px;
+                overflow: hidden;
+            }}
+            
+            .ad-leaderboard {{
+                width: 100%;
+                max-width: 728px;
+                height: 90px;
+                margin-bottom: 40px;
+            }}
+            
+            .ad-sticky-footer {{
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background: white;
+                border-top: 1px solid #ddd;
+                z-index: 999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }}
+            
+            @media (max-width: 768px) {{
+                .ad-sticky-footer {{
+                    height: 50px;
+                }}
+                .export-bar {{
+                     bottom: 70px; /* Push export button up */
+                }}
+                .cto-footer {{
+                    margin-bottom: 60px; /* Spacer for sticky ad */
+                }}
+            }}
+            
+            /* Share Buttons */
+            .share-section {{
+                text-align: center;
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 1px solid var(--border);
+            }}
+            
+            .share-btn {{
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 16px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 500;
+                margin: 0 8px;
+                color: white;
+                transition: opacity 0.2s;
+            }}
+            
+            .share-btn:hover {{
+                opacity: 0.9;
+            }}
+            
+            .btn-whatsapp {{ background: #25D366; }}
+            .btn-linkedin {{ background: #0077b5; }}
+            
             .card-title {{
                 font-size: 16px;
                 color: var(--secondary);
@@ -695,6 +777,12 @@ def generate_html_report(df):
                 <div style="font-weight: 600;">Analysis XYZ</div>
             </div>
             
+            <!-- Leaderboard Ad -->
+            <div class="ad-container ad-leaderboard">
+                <span style="color:#aaa; font-size:12px;">ADVERTISEMENT (728x90)</span>
+                <!-- INSERT ADSENSE CODE HERE -->
+            </div>
+            
             {ai_html}
             
             {ml_html}
@@ -734,6 +822,23 @@ def generate_html_report(df):
                 <p>Get a comprehensive audit from a certified data scientist.</p>
                 <a href="#" class="btn btn-primary" style="border:none;">Hire a Data Expert</a>
             </div>
+            
+            <div class="share-section">
+                <p style="color: var(--secondary); margin-bottom: 16px;">Share this report:</p>
+                <a href="https://wa.me/?text=Check+out+this+analysis+report+I+generated+instantly!+https://analysis-xyz.vercel.app" target="_blank" class="share-btn btn-whatsapp">
+                    WhatsApp
+                </a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://analysis-xyz.vercel.app" target="_blank" class="share-btn btn-linkedin">
+                    LinkedIn
+                </a>
+            </div>
+        </div>
+        
+        <!-- Sticky Footer Ad (Mobile optimized) -->
+        <div class="ad-sticky-footer">
+             <span style="color:#aaa; font-size:10px;">MOBILE AD (320x50)</span>
+             <!-- INSERT ADSENSE CODE HERE -->
+        </div>
         </div>
         
         <div class="export-bar">

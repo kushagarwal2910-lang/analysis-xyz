@@ -67,6 +67,45 @@ document.addEventListener('DOMContentLoaded', () => {
         handleFiles(fileInput.files);
     });
 
+    // Demo Button
+    const demoBtn = document.getElementById('demo-btn');
+    if (demoBtn) {
+        demoBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent triggering upload box click
+            runDemo();
+        });
+    }
+
+    function runDemo() {
+        // UI Reset
+        resultContainer.classList.add('hidden');
+        uploadContent.classList.add('hidden');
+        progressContainer.classList.remove('hidden');
+
+        fetch('/demo', {
+            method: 'POST'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.detail || 'Demo failed') });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showResult(data.report_html);
+                } else {
+                    alert('Demo failed: ' + (data.message || 'Unknown error'));
+                    resetUI();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred: ' + error.message);
+                resetUI();
+            });
+    }
+
     function handleFiles(files) {
         if (files.length > 0) {
             uploadFile(files[0]);
@@ -86,36 +125,36 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.detail || 'Upload failed') });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                // Backend returns raw HTML string now
-                showResult(data.report_html);
-            } else {
-                alert('Analysis failed: ' + (data.message || 'Unknown error'));
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.detail || 'Upload failed') });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    // Backend returns raw HTML string now
+                    showResult(data.report_html);
+                } else {
+                    alert('Analysis failed: ' + (data.message || 'Unknown error'));
+                    resetUI();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred: ' + error.message);
                 resetUI();
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred: ' + error.message);
-            resetUI();
-        });
+            });
     }
 
     function showResult(htmlContent) {
         progressContainer.classList.add('hidden');
         resultContainer.classList.remove('hidden');
-        
+
         // Create a Blob from the HTML content
         const blob = new Blob([htmlContent], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
-        
+
         openBtn.href = url;
         downloadBtn.href = url;
         // Set download attribute for download button

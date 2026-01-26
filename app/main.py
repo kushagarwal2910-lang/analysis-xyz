@@ -80,3 +80,25 @@ async def upload_file(file: UploadFile = File(...)):
         # Cleanup temp file
         if os.path.exists(temp_path):
             os.remove(temp_path)
+@app.post("/demo")
+async def demo_analysis():
+    try:
+        sample_path = os.path.join(BASE_DIR, "sample_data.csv")
+        if not os.path.exists(sample_path):
+             raise HTTPException(status_code=404, detail="Sample data not found")
+        
+        # Process the sample file
+        report_html = await run_in_threadpool(process_data_and_generate_report, sample_path, ".csv", BASE_DIR)
+        
+        return JSONResponse(content={
+            "status": "success", 
+            "report_html": report_html
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+    finally:
+        # No cleanup needed for sample file
+        pass
