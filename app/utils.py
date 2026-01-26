@@ -710,54 +710,7 @@ def generate_html_report(df):
             }}
             
             /* Footer / Monetization */
-            .cto-footer {{
-                margin-top: 60px;
-                padding: 40px;
-                background: #1d1d1f;
-                border-radius: var(--radius-lg);
-                color: white;
-                text-align: center;
-            }}
-            
-            .cto-footer h3 {{
-                color: white;
-                margin-bottom: 8px;
-            }}
-            
-            .cto-footer p {{
-                color: #a1a1a6;
-                margin-bottom: 24px;
-            }}
-            
-            .export-bar {{
-                position: sticky;
-                bottom: 20px;
-                left: 0;
-                right: 0;
-                display: flex;
-                justify-content: center;
-                pointer-events: none;
-                z-index: 100;
-            }}
-            
-            .export-btn {{
-                pointer-events: auto;
-                background: #1d1d1f;
-                color: white;
-                padding: 12px 24px;
-                border-radius: 30px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                text-decoration: none;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                transition: transform 0.2s;
-            }}
-            
-            .export-btn:hover {{
-                transform: translateY(-2px);
-            }}
+
 
             /* Mobile Responsive Fixes */
             .card {{
@@ -817,11 +770,7 @@ def generate_html_report(df):
                 {missing_html}
             </div>
             
-            <div class="cto-footer">
-                <h3>Need a deeper custom analysis?</h3>
-                <p>Get a comprehensive audit from a certified data scientist.</p>
-                <a href="#" class="btn btn-primary" style="border:none;">Hire a Data Expert</a>
-            </div>
+
             
             <div class="share-section">
                 <p style="color: var(--secondary); margin-bottom: 16px;">Share this report:</p>
@@ -841,11 +790,7 @@ def generate_html_report(df):
         </div>
         </div>
         
-        <div class="export-bar">
-            <a href="#" class="export-btn" onclick="alert('This feature is part of the Pro plan. Upgrade to export professional PDF reports.'); return false;">
-                <span>📄 Export Professional Report</span>
-            </a>
-        </div>
+
         
         <!-- jQuery and DataTables JS -->
         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
