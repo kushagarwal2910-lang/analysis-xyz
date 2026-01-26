@@ -94,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             if (data.status === 'success') {
-                showResult(data.report_url);
+                // Backend returns raw HTML string now
+                showResult(data.report_html);
             } else {
                 alert('Analysis failed: ' + (data.message || 'Unknown error'));
                 resetUI();
@@ -107,12 +108,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function showResult(url) {
+    function showResult(htmlContent) {
         progressContainer.classList.add('hidden');
         resultContainer.classList.remove('hidden');
         
+        // Create a Blob from the HTML content
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        
         openBtn.href = url;
         downloadBtn.href = url;
+        // Set download attribute for download button
+        downloadBtn.download = 'analysis_report.html';
     }
 
     function resetUI() {

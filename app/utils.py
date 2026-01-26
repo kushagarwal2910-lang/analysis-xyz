@@ -32,28 +32,30 @@ def process_data_and_generate_report(file_path, ext, base_dir):
                 df[col] = pd.to_numeric(df[col], errors='coerce')
 
     # Generate Lightweight HTML Report
-    report_filename = f"report_{uuid.uuid4()}.html"
-    output_dir = os.path.join(base_dir, "static/reports")
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, report_filename)
-    
-    generate_html_report(df, output_path)
+    # Return HTML string directly instead of saving to file (for Vercel)
+    return generate_html_report(df)
     
     return report_filename
 
 def extract_table_from_pdf(file_path):
+    # This is a heuristic approach. extracting tables from PDF is hard.
+    # We will try to extract the largest table found on first few pages
     all_rows = []
     with pdfplumber.open(file_path) as pdf:
         for page in pdf.pages:
             tables = page.extract_tables()
             for table in tables:
+                # table is list of lists
+                # Assume first row is header if we haven't found one, or append
                 if table:
+                    # Clean None values
                     cleaned_table = [[cell if cell is not None else "" for cell in row] for row in table]
                     all_rows.extend(cleaned_table)
                     
     if not all_rows:
         return None
         
+    # Assume first row is header
     header = all_rows[0]
     data = all_rows[1:]
     
@@ -72,7 +74,7 @@ def extract_table_from_pdf(file_path):
     df = pd.DataFrame(data, columns=unique_header)
     return df
 
-def generate_html_report(df, output_path):
+def generate_html_report(df):
     # Statistics
     desc = df.describe().to_html(classes="table table-striped", border=0)
     head = df.head(10).to_html(classes="table table-striped", border=0)
@@ -176,31 +178,30 @@ def generate_html_report(df, output_path):
             
             <div class="card">
                 <h2>Dataset Overview</h2>
-                <p><strong>Rows:</strong> {df.shape[0]} | <strong>Columns:</strong> {df.shape[1]}</p>
+                <p><strong>Rows:</strong> {{df.shape[0]}} | <strong>Columns:</strong> {{df.shape[1]}}</p>
                 <div style="margin-top: 20px;">
-                    {dtypes}
+                    {{dtypes}}
                 </div>
             </div>
 
             <h2>Descriptive Statistics</h2>
             <div class="card">
-                {desc}
+                {{desc}}
             </div>
 
             <h2>First 10 Rows</h2>
             <div class="card">
-                {head}
+                {{head}}
             </div>
             
             <h2>Missing Values</h2>
             <div class="card">
-                {missing_html}
+                {{missing_html}}
             </div>
         </div>
     </body>
     </html>
     """
     
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html_content)
+    return html_content
 

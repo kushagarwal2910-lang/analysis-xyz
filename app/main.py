@@ -57,7 +57,8 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Invalid file type. Only CSV, Excel, and PDF allowed.")
 
     # Save temp file
-    temp_dir = os.path.join(BASE_DIR, "../temp")
+    # Vercel only allows writing to /tmp
+    temp_dir = "/tmp"
     os.makedirs(temp_dir, exist_ok=True)
     temp_path = os.path.join(temp_dir, f"{uuid.uuid4()}{ext}")
     
@@ -65,11 +66,11 @@ async def upload_file(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
         
     try:
-        # Pass BASE_DIR to utils so it knows where to save report
-        report_filename = await run_in_threadpool(process_data_and_generate_report, temp_path, ext, BASE_DIR)
+        # Pass BASE_DIR to utils (though we won't write to it anymore)
+        report_html = await run_in_threadpool(process_data_and_generate_report, temp_path, ext, BASE_DIR)
         return JSONResponse(content={
             "status": "success", 
-            "report_url": f"/static/reports/{report_filename}"
+            "report_html": report_html
         })
     except Exception as e:
         import traceback
