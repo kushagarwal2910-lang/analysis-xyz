@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis XYZ - Analyze Data Instantly{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Analyze Data Instantly. <span class="highlight">100% Private.</span></h1>
+    <p class="subtitle">Upload CSV, Excel, or PDF files and get a comprehensive analysis report in seconds.</p>
+</section>
+
+<section class="upload-section">
+    <div class="upload-box" id="drop-zone">
+        <div class="upload-content">
+            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <p class="upload-text">Drag & Drop your file here</p>
+            <p class="upload-hint">or click to browse (CSV, XLSX, PDF)</p>
+            <input type="file" id="file-input" hidden accept=".csv, .xlsx, .xls, .pdf">
+        </div>
+        <div id="progress-container" class="hidden">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p class="progress-text">Analyzing your data...</p>
+        </div>
+    </div>
+    
+    <div id="result-container" class="hidden fade-in">
+        <div class="success-message">
+            <svg class="success-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <h3>Analysis Complete!</h3>
+        </div>
+        <div class="action-buttons">
+            <a id="open-btn" href="#" target="_blank" class="btn btn-primary">Open Report</a>
+            <a id="download-btn" href="#" download class="btn btn-secondary">Download Report</a>
+        </div>
+    </div>
+</section>
+
+<section class="seo-content">
+    <h2>How to analyze CSV files without Python</h2>
+    <p>Analyzing data often requires complex programming skills in Python or R. However, Analysis XYZ bridges the gap by providing a no-code solution for instant data profiling.</p>
+    
+    <h3>Why use automated data profiling?</h3>
+    <p>Data profiling helps you understand your dataset's structure, quality, and content. It identifies missing values, duplicates, and outliers automatically.</p>
+    
+    <h3>Supported Formats</h3>
+    <ul>
+        <li><strong>CSV Files:</strong> The standard format for data exchange. We handle various delimiters and encodings.</li>
+        <li><strong>Excel (XLSX):</strong> Directly upload your spreadsheets without converting them first.</li>
+        <li><strong>PDF Tables:</strong> Our advanced engine extracts tabular data from PDF documents for analysis.</li>
+    </ul>
+    
+    <p>Whether you are a business analyst, student, or researcher, getting a quick overview of your data is crucial. Our tool runs locally on secure servers and deletes your data immediately after processing, ensuring 100% privacy.</p>
+    
+    <p>Get started today by uploading your file above and discover insights hidden in your data.</p>
+</section>
+{% endblock %}
