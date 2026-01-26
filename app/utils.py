@@ -426,7 +426,9 @@ def generate_html_report(df):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Analysis Report</title>
+        <meta name="description" content="Automated Business Intelligence Report. Secure, client-side processed analysis of your CSV/Excel data. Free Tableau alternative.">
+        <meta name="keywords" content="Automated Business Intelligence, CSV Analyzer, Financial Data Audit, Instant Dashboard, Secure Data Analysis">
+        <title>Analysis Report - Analysis XYZ</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -771,6 +773,11 @@ def generate_html_report(df):
             </div>
             
 
+            
+            <div class="privacy-badge" style="margin: 40px auto; background: #f8fafc; border-color: #e2e8f0; color: #475569;">
+                <svg class="shield-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px; height:16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <span><strong>🔒 Client-Side Processing:</strong> Your data never leaves your device.</span>
+            </div>
             
             <div class="share-section">
                 <p style="color: var(--secondary); margin-bottom: 16px;">Share this report:</p>
