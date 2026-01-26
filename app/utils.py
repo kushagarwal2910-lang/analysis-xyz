@@ -5,6 +5,7 @@ import uuid
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import seaborn as sns
 import io
 import base64
 
@@ -126,12 +127,31 @@ def generate_charts(df):
             plt.close()
             break # Only one numerical chart
             
+    # 3. Correlation Heatmap
+    if len(num_cols) > 1:
+        plt.figure(figsize=(10, 8))
+        corr = df[num_cols].corr()
+        sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
+        plt.title('Correlation Matrix')
+        
+        img = io.BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight')
+        img.seek(0)
+        charts.append({
+            'title': 'Correlation Matrix',
+            'img': base64.b64encode(img.getvalue()).decode()
+        })
+        plt.close()
+            
     return charts
 
 def generate_html_report(df):
     # Statistics
     desc = df.describe().to_html(classes="table table-striped", border=0)
-    head = df.head(20).to_html(classes="table table-striped", border=0) # Increased to 20 rows
+    
+    # Data Preview (Increased to 100 rows for better interaction)
+    # We give it a specific ID for DataTables
+    head = df.head(100).to_html(classes="table table-striped display", border=0, table_id="data-preview-table")
     
     # Missing values
     missing = df.isnull().sum().to_frame(name='Missing Values')
@@ -166,6 +186,8 @@ def generate_html_report(df):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Analysis Report</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+        <!-- DataTables CSS -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
         <style>
             :root {{
                 --primary: #000000;
@@ -285,6 +307,19 @@ def generate_html_report(df):
                 {missing_html}
             </div>
         </div>
+        
+        <!-- jQuery and DataTables JS -->
+        <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+        
+        <script>
+            $(document).ready( function () {{
+                $('#data-preview-table').DataTable({{
+                    "pageLength": 10,
+                    "scrollX": true
+                }});
+            }});
+        </script>
     </body>
     </html>
     """
