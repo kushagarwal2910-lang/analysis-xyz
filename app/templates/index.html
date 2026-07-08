@@ -1,126 +1,120 @@
 {% extends "base.html" %}
 
-{% block title %}Analysis XYZ - Automated Business Intelligence & Financial Audit{% endblock %}
-
-{% block head %}
-<meta name="description"
-    content="Free Tableau Alternative for Instant CSV Visualization. Secure, client-side processing for financial data audit and automated business intelligence.">
-<meta name="keywords"
-    content="Automated Business Intelligence, Free Tableau Alternative, Instant CSV Visualization, Financial Data Audit, CSV to Dashboard, Secure Data Analysis">
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH370D5H8K"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-
-    gtag('config', 'G-WH370D5H8K');
-</script>
-
-{% endblock %}
+{% block title %}Analysis XYZ - Premium Business Intelligence Platform{% endblock %}
 
 {% block content %}
 <section class="hero">
-    <h1>Transform Data into <span class="highlight">Decisions.</span></h1>
-    <p class="subtitle">Secure, private, and instant data analysis powered by AI. No sign-up required.</p>
+    <div class="container">
+        <h1>Transform Data into <span class="highlight">Decisions.</span></h1>
+        <p class="subtitle">Premium Data Intelligence Platform for Modern Enterprises</p>
+    </div>
+</section>
 
-    <div class="ad-container ad-leaderboard">
-        <span style="color:#aaa; font-size:12px;">ADVERTISEMENT (728x90)</span>
-        <!-- INSERT ADSENSE LEADERBOARD HERE -->
+<section class="features-section">
+    <div class="container">
+        <div class="feature-grid">
+            <div class="feature-card fade-in">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="feature-icon" viewBox="0 0 24 24">
+                        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+                <h3>AI Executive Summary</h3>
+                <p>Automatically generated key findings and actionable recommendations based on your data patterns</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="feature-icon" viewBox="0 0 24 24">
+                        <path d="M12 2a10 10 0 1010 10A10.01 10.01 0 0012 2zm1 15a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <h3>Privacy First</h3>
+                <p>Your data is processed locally on your device. Complete privacy and security</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="feature-icon" viewBox="0 0 24 24">
+                        <path d="M12 2a8 8 0 1012 16 8 8 0 00-12-16zm1 15h-2v-2a4 4 0 00-4 4h2a4 4 0 004-4v-2z"/>
+                    </svg>
+                </div>
+                <h3>Universal Support</h3>
+                <p>Handles CSV, Excel, PDF, and complex data structures with precision</p>
+            </div>
+        </div>
     </div>
 </section>
 
 <section class="upload-section">
     <div class="container">
-        <!-- Trust Badge -->
         <div class="privacy-badge">
-            <svg class="shield-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                </path>
-            </svg>
-            <span><strong>🔒 Client-Side Processing:</strong> Your data never leaves your device.</span>
+            <div class="shield-icon">
+                <svg class="shield-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+            </div>
+            <span><strong>🔒 Client-Side Processing:</strong> Your data never leaves your device</span>
         </div>
 
-        <div class="upload-box" id="drop-zone">
+        <div class="upload-box drag-over" id="drop-zone">
             <div class="upload-content">
-                <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                    </path>
-                </svg>
-                <p class="upload-text">Upload your dataset</p>
-                <p class="upload-hint">Support for CSV, XLSX, and PDF</p>
-                <input type="file" id="file-input" hidden accept=".csv, .xlsx, .xls, .pdf">
-
-                <div class="divider"><span>OR</span></div>
-
-                <button id="demo-btn" class="btn btn-demo">
-                    <span>⚡ Try with Sample Data</span>
-                </button>
-            </div>
-
-            <div id="progress-container" class="hidden">
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
+                <div class="upload-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="upload-svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6l16 12a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
                 </div>
-                <p class="upload-hint">Analyzing with AI...</p>
-            </div>
-        </div>
-
-        <div class="social-proof">
-            <p>Trusted by <strong>10,000+ Analysts</strong> at top firms</p>
-            <div class="stars">★★★★★</div>
-        </div>
-
-        <div id="result-container" class="hidden fade-in">
-            <div class="success-message">
-                <svg class="success-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <h3>Analysis Ready</h3>
-            </div>
-            <div class="action-buttons">
-                <a id="open-btn" href="#" target="_blank" class="btn btn-primary">View Full Report</a>
-                <a id="download-btn" href="#" download class="btn btn-secondary">Download HTML</a>
+                <p class="upload-text">Upload Your Dataset</p>
+                <p class="upload-hint">Support for CSV, XLSX, PDF, and more</p>
+                <input type="file" id="file-input" hidden accept=".csv, .xlsx, .xls, .pdf">
+                
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+                
+                <button id="demo-btn" class="btn btn-primary w-full">
+                    <span>⚡ Start Analysis with Sample Data</span>
+                </button>
+                
+                <div class="progress-container hidden" id="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <p class="upload-hint">Analyzing with AI...</p>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 <section class="seo-content">
-    <h2>Enterprise-Grade Analytics for Everyone</h2>
-    <p>Analysis XYZ replaces complex coding and expensive tools with a simple, drag-and-drop interface. Whether you're
-        analyzing quarterly sales or academic research, our engine provides actionable insights in seconds.</p>
-
-    <h3>Why choose Analysis XYZ?</h3>
-    <ul>
-        <li><strong>AI Executive Summary:</strong> Get specialized "Key Findings" and "Recommendations" automatically
-            generated from your data patterns.</li>
-        <li><strong>Privacy First:</strong> ISO-27001 inspired security architecture ensures your files are processed
-            ephemerally.</li>
-        <li><strong>Universal Support:</strong> We handle messy CSVs, multiple Excel sheets, and even PDF tables with
-            our advanced parsing engine.</li>
-    </ul>
-
-    <div style="text-align: center; margin-top: 60px;">
-        <p>GDPR & CCPA Compliant Design</p>
+    <div class="container">
+        <h2>Enterprise-Grade Analytics for Modern Business</h2>
+        <p>Analysis XYZ is a premium platform that delivers instant, actionable insights through a beautiful, intuitive interface. No complex setup, no server uploads, just pure intelligence.</p>
+        
+        <div class="feature-list">
+            <div class="feature-item">
+                <h3>AI Executive Summary</h3>
+                <p>Automatically generated key findings and actionable recommendations based on statistical patterns and data relationships</p>
+            </div>
+            
+            <div class="feature-item">
+                <h3>Privacy First</h3>
+                <p>All data is processed locally on your device. We never store, sell, or view your files</p>
+            </div>
+            
+            <div class="feature-item">
+                <h3>Universal Support</h3>
+                <p>Handles CSV, Excel (XLS/XLSX), PDF tables, and complex data structures with precision</p>
+            </div>
+            
+            <div class="feature-item">
+                <h3>Professional Visualizations</h3>
+                <p>Interactive charts, graphs, and data visualizations that bring your data to life</p>
+            </div>
+        </div>
     </div>
 </section>
-
-<!-- Mobile Sticky Ad -->
-<div class="ad-sticky-footer">
-    <span style="color:#aaa; font-size:10px;">MOBILE AD (320x50)</span>
-    <!-- INSERT ADSENSE CODE HERE -->
-</div>
-<script>
-    console.log(
-        "%c AnalysisXYZ %c \nWait... why are you looking at the console? \nLooking for the antigravity module? 🚀 \n\nWe process data locally. No server uploads. You're safe here.",
-        "color: #00d1b2; font-size: 40px; font-weight: bold; text-shadow: 2px 2px black;",
-        "color: #b5b5b5; font-size: 14px;"
-    );
-    console.log("%c Build your own future. ", "background: #222; color: #bada55; padding: 5px;");
-</script>
 {% endblock %}
